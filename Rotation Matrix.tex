@@ -1,0 +1,165 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath, amssymb, mathtools}
+\usepackage{tikz}
+\usepackage{geometry}
+\geometry{margin=1in}
+\title{Learning Notes: Affine Transformations in 2D Geometry}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section*{Motivation}
+In the problem, we are given $N$ points on a 2D plane and a series of $M$ operations such as:
+\begin{itemize}
+    \item Rotating all points $90^\circ$ clockwise or counterclockwise around the origin.
+    \item Reflecting all points across vertical or horizontal lines.
+\end{itemize}
+After these operations, we are to answer $Q$ queries of the form: “What are the coordinates of point $b$ after the $a$-th operation?”
+
+\section*{Step 1: Using $2 \times 2$ Rotation Matrices}
+The standard rotation matrix for rotating a point $(x, y)$ by $\theta$ around the origin is:
+
+\[
+R(\theta) =
+\begin{bmatrix}
+\cos\theta & -\sin\theta \\
+\sin\theta & \cos\theta
+\end{bmatrix}
+\]
+
+Examples:
+\begin{itemize}
+    \item $90^\circ$ counterclockwise ($\theta = 90^\circ$):
+    \[
+    R(90^\circ) = 
+    \begin{bmatrix}
+    0 & -1 \\
+    1 & 0
+    \end{bmatrix}
+    \Rightarrow (x, y) \mapsto (-y, x)
+    \]
+    
+    \item $90^\circ$ clockwise ($\theta = -90^\circ$):
+    \[
+    R(-90^\circ) = 
+    \begin{bmatrix}
+    0 & 1 \\
+    -1 & 0
+    \end{bmatrix}
+    \Rightarrow (x, y) \mapsto (y, -x)
+    \]
+\end{itemize}
+
+\textbf{Limitation:} These $2 \times 2$ matrices can perform rotation and scaling, but not \emph{translation} or \emph{reflection over arbitrary lines}.
+
+\section*{Step 2: Homogeneous Coordinates and $3 \times 3$ Matrices}
+To perform translations and more general affine transformations, we use \textbf{homogeneous coordinates}. A point $(x, y)$ becomes:
+
+\[
+\begin{bmatrix}
+x \\
+y \\
+1
+\end{bmatrix}
+\]
+
+Now every transformation is represented as a $3 \times 3$ matrix:
+
+\[
+T =
+\begin{bmatrix}
+a_{11} & a_{12} & a_{13} \\
+a_{21} & a_{22} & a_{23} \\
+0 & 0 & 1
+\end{bmatrix}
+\]
+
+\subsection*{Examples}
+\begin{itemize}
+    \item \textbf{Rotate $90^\circ$ clockwise:}
+    \[
+    \begin{bmatrix}
+    0 & 1 & 0 \\
+    -1 & 0 & 0 \\
+    0 & 0 & 1
+    \end{bmatrix}
+    \]
+
+    \item \textbf{Rotate $90^\circ$ counterclockwise:}
+    \[
+    \begin{bmatrix}
+    0 & -1 & 0 \\
+    1 & 0 & 0 \\
+    0 & 0 & 1
+    \end{bmatrix}
+    \]
+
+    \item \textbf{Reflect across $x = p$:}
+    \[
+    \begin{bmatrix}
+    -1 & 0 & 2p \\
+    0 & 1 & 0 \\
+    0 & 0 & 1
+    \end{bmatrix}
+    \Rightarrow (x, y) \mapsto (2p - x, y)
+    \]
+
+    \item \textbf{Reflect across $y = p$:}
+    \[
+    \begin{bmatrix}
+    1 & 0 & 0 \\
+    0 & -1 & 2p \\
+    0 & 0 & 1
+    \end{bmatrix}
+    \Rightarrow (x, y) \mapsto (x, 2p - y)
+    \]
+\end{itemize}
+
+\section*{Step 3: Composing Transformations}
+Transformations can be composed by multiplying their matrices:
+
+\[
+T_{\text{total}} = T_1 \cdot T_2 \cdot T_3 \cdots T_k
+\]
+
+Important: When applying transformations in order, the \emph{new operation matrix must appear on the left} in multiplication.
+
+\textbf{Example:} To apply operation 1, then 2, then 3:
+\[
+T = T_3 \cdot T_2 \cdot T_1
+\]
+
+\section*{Step 4: Applying to a Point}
+Given a point $(x, y)$ in homogeneous coordinates:
+\[
+\begin{bmatrix}
+x' \\
+y' \\
+1
+\end{bmatrix}
+=
+T \cdot 
+\begin{bmatrix}
+x \\
+y \\
+1
+\end{bmatrix}
+\Rightarrow
+x' = a_{11}x + a_{12}y + a_{13}, \quad
+y' = a_{21}x + a_{22}y + a_{23}
+\]
+
+\section*{Why This Works Well}
+Instead of recomputing each point's position after every query, we precompute $T_0, T_1, \ldots, T_M$ where $T_i$ is the total transformation after $i$ operations. Then we can answer each query in $O(1)$ time.
+
+\section*{Takeaways}
+\begin{itemize}
+    \item $2 \times 2$ matrices are limited to linear transformations (rotation, scaling).
+    \item $3 \times 3$ homogeneous matrices can handle translation and reflection as well.
+    \item Precomputing transformation matrices makes queries efficient.
+    \item Order of matrix multiplication matters: compose from last to first.
+\end{itemize}
+
+\end{document}
